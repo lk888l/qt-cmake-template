@@ -1,0 +1,102 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  QT_VERSION: 6.7.3
+
+jobs:
+  windows-msvc:
+    name: Windows / MSVC 2022
+    runs-on: windows-2022
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@48d3ad6db93f3627c8ee7a0454bc6f3744f7e730 # v4.3.1
+        with:
+          version: ${{ env.QT_VERSION }}
+          arch: win64_msvc2022_64
+          cache: true
+
+      - name: Export preset environment
+        shell: pwsh
+        run: Add-Content -Path $env:GITHUB_ENV -Value "QT_MSVC_ROOT=$env:QT_ROOT_DIR"
+
+      - name: Configure
+        run: cmake --preset windows-msvc -DQTAPP_WARNINGS_AS_ERRORS=ON
+
+      - name: Build
+        run: cmake --build --preset windows-msvc-release
+
+      - name: Test
+        run: ctest --preset windows-msvc-release
+
+      - name: Verify install and deployment
+        run: cmake --install out/build/windows-msvc --config Release --prefix "$env:GITHUB_WORKSPACE/out/stage-msvc"
+
+      - name: Verify package
+        run: cpack --preset windows-msvc-release
+
+  windows-mingw:
+    name: Windows / MinGW
+    runs-on: windows-2022
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+
+      - name: Install Qt and matching MinGW
+        uses: jurplel/install-qt-action@48d3ad6db93f3627c8ee7a0454bc6f3744f7e730 # v4.3.1
+        with:
+          version: ${{ env.QT_VERSION }}
+          arch: win64_mingw
+          tools: tools_mingw1120
+          cache: true
+
+      - name: Export and verify preset environment
+        shell: pwsh
+        run: |
+          $compiler = (Get-Command g++.exe).Source
+          $compilerVersion = & $compiler -dumpfullversion
+          if ($compilerVersion -ne "11.2.0") {
+            throw "Expected Qt's MinGW 11.2.0 toolchain, found $compilerVersion at $compiler"
+          }
+          $mingwRoot = Split-Path (Split-Path $compiler -Parent) -Parent
+          $ninjaRoot = Split-Path (Get-Command ninja.exe).Source -Parent
+          Add-Content -Path $env:GITHUB_ENV -Value "QT_MINGW_ROOT=$env:QT_ROOT_DIR"
+          Add-Content -Path $env:GITHUB_ENV -Value "MINGW_ROOT=$mingwRoot"
+          Add-Content -Path $env:GITHUB_ENV -Value "NINJA_ROOT=$ninjaRoot"
+
+      - name: Configure
+        run: cmake --preset windows-mingw-release -DQTAPP_WARNINGS_AS_ERRORS=ON
+
+      - name: Build
+        run: cmake --build --preset windows-mingw-release
+
+      - name: Test
+        run: ctest --preset windows-mingw-release
+
+      - name: Verify install and deployment
+        run: cmake --install out/build/windows-mingw-release --prefix "$env:GITHUB_WORKSPACE/out/stage-mingw"
+
+      - name: Verify package
+        run: cpack --preset windows-mingw-release

@@ -1,0 +1,14 @@
+#pragma once
+
+#include <string_view>
+
+namespace app::build {
+
+inline constexpr std::string_view projectName{"@QTAPP_CONFIG_PROJECT_NAME@"};
+inline constexpr std::string_view projectVersion{"@QTAPP_CONFIG_PROJECT_VERSION@"};
+inline constexpr std::string_view projectDescription{"@QTAPP_CONFIG_PROJECT_DESCRIPTION@"};
+inline constexpr std::string_view organizationName{"@QTAPP_CONFIG_ORGANIZATION_NAME@"};
+inline constexpr std::string_view organizationDomain{"@QTAPP_CONFIG_ORGANIZATION_DOMAIN@"};
+inline constexpr std::string_view applicationId{"@QTAPP_CONFIG_APPLICATION_ID@"};
+
+} // namespace app::build

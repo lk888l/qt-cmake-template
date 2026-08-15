@@ -1,0 +1,113 @@
+{
+  "version": 6,
+  "configurePresets": [
+    {
+      "name": "local-msvc",
+      "inherits": "windows-msvc",
+      "environment": {
+        "QT_MSVC_ROOT": "C:/Qt/6.x.y/msvc2022_64"
+      }
+    },
+    {
+      "name": "local-mingw-debug",
+      "inherits": "windows-mingw-debug",
+      "environment": {
+        "QT_MINGW_ROOT": "C:/Qt/6.x.y/mingw_64",
+        "MINGW_ROOT": "C:/Qt/Tools/mingwXXXX_64",
+        "NINJA_ROOT": "C:/Qt/Tools/Ninja"
+      }
+    },
+    {
+      "name": "local-mingw-release",
+      "inherits": "windows-mingw-release",
+      "environment": {
+        "QT_MINGW_ROOT": "C:/Qt/6.x.y/mingw_64",
+        "MINGW_ROOT": "C:/Qt/Tools/mingwXXXX_64",
+        "NINJA_ROOT": "C:/Qt/Tools/Ninja"
+      }
+    }
+  ],
+  "buildPresets": [
+    { "name": "local-msvc-debug", "configurePreset": "local-msvc", "configuration": "Debug", "jobs": 0 },
+    { "name": "local-msvc-release", "configurePreset": "local-msvc", "configuration": "Release", "jobs": 0 },
+    { "name": "local-mingw-debug", "configurePreset": "local-mingw-debug", "jobs": 0 },
+    { "name": "local-mingw-release", "configurePreset": "local-mingw-release", "jobs": 0 }
+  ],
+  "testPresets": [
+    {
+      "name": "local-msvc-debug",
+      "configurePreset": "local-msvc",
+      "configuration": "Debug",
+      "output": { "outputOnFailure": true },
+      "execution": { "noTestsAction": "error", "stopOnFailure": true }
+    },
+    {
+      "name": "local-msvc-release",
+      "configurePreset": "local-msvc",
+      "configuration": "Release",
+      "output": { "outputOnFailure": true },
+      "execution": { "noTestsAction": "error", "stopOnFailure": true }
+    },
+    {
+      "name": "local-mingw-debug",
+      "configurePreset": "local-mingw-debug",
+      "output": { "outputOnFailure": true },
+      "execution": { "noTestsAction": "error", "stopOnFailure": true }
+    },
+    {
+      "name": "local-mingw-release",
+      "configurePreset": "local-mingw-release",
+      "output": { "outputOnFailure": true },
+      "execution": { "noTestsAction": "error", "stopOnFailure": true }
+    }
+  ],
+  "packagePresets": [
+    {
+      "name": "local-msvc-release",
+      "configurePreset": "local-msvc",
+      "generators": ["ZIP"],
+      "configurations": ["Release"]
+    },
+    {
+      "name": "local-mingw-release",
+      "configurePreset": "local-mingw-release",
+      "generators": ["ZIP"]
+    }
+  ],
+  "workflowPresets": [
+    {
+      "name": "local-msvc-debug",
+      "steps": [
+        { "type": "configure", "name": "local-msvc" },
+        { "type": "build", "name": "local-msvc-debug" },
+        { "type": "test", "name": "local-msvc-debug" }
+      ]
+    },
+    {
+      "name": "local-msvc-release",
+      "steps": [
+        { "type": "configure", "name": "local-msvc" },
+        { "type": "build", "name": "local-msvc-release" },
+        { "type": "test", "name": "local-msvc-release" },
+        { "type": "package", "name": "local-msvc-release" }
+      ]
+    },
+    {
+      "name": "local-mingw-debug",
+      "steps": [
+        { "type": "configure", "name": "local-mingw-debug" },
+        { "type": "build", "name": "local-mingw-debug" },
+        { "type": "test", "name": "local-mingw-debug" }
+      ]
+    },
+    {
+      "name": "local-mingw-release",
+      "steps": [
+        { "type": "configure", "name": "local-mingw-release" },
+        { "type": "build", "name": "local-mingw-release" },
+        { "type": "test", "name": "local-mingw-release" },
+        { "type": "package", "name": "local-mingw-release" }
+      ]
+    }
+  ]
+}

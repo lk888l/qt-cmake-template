@@ -1,0 +1,12 @@
+QMainWindow {
+    background-color: palette(window);
+}
+
+QLabel#titleLabel {
+    color: palette(window-text);
+}
+
+QLabel#subtitleLabel {
+    color: palette(mid);
+    font-size: 14px;
+}

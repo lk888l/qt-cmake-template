@@ -1,0 +1,205 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 25,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "installDir": "${sourceDir}/out/install/${presetName}",
+      "cacheVariables": {
+        "BUILD_TESTING": "ON",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "QTAPP_WARNINGS_AS_ERRORS": "OFF"
+      }
+    },
+    {
+      "name": "windows-base",
+      "hidden": true,
+      "inherits": "base",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
+      "name": "windows-msvc",
+      "displayName": "Windows / MSVC 2022",
+      "description": "Primary Windows toolchain; set QT_MSVC_ROOT in the environment or a user preset.",
+      "inherits": "windows-base",
+      "generator": "Visual Studio 17 2022",
+      "architecture": {
+        "value": "x64",
+        "strategy": "set"
+      },
+      "environment": {
+        "PATH": "$env{QT_MSVC_ROOT}/bin;$penv{PATH}"
+      },
+      "cacheVariables": {
+        "Qt6_ROOT": "$env{QT_MSVC_ROOT}"
+      }
+    },
+    {
+      "name": "windows-mingw-debug",
+      "displayName": "Windows / MinGW / Debug",
+      "description": "Secondary GCC-compatible toolchain with an explicitly matched Qt MinGW kit.",
+      "inherits": "windows-base",
+      "generator": "Ninja",
+      "environment": {
+        "PATH": "$env{QT_MINGW_ROOT}/bin;$env{MINGW_ROOT}/bin;$env{NINJA_ROOT};$penv{PATH}"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_CXX_COMPILER": "$env{MINGW_ROOT}/bin/g++.exe",
+        "CMAKE_MAKE_PROGRAM": "$env{NINJA_ROOT}/ninja.exe",
+        "Qt6_ROOT": "$env{QT_MINGW_ROOT}"
+      }
+    },
+    {
+      "name": "windows-mingw-release",
+      "displayName": "Windows / MinGW / Release",
+      "description": "Release build with the explicitly matched Qt MinGW kit.",
+      "inherits": "windows-base",
+      "generator": "Ninja",
+      "environment": {
+        "PATH": "$env{QT_MINGW_ROOT}/bin;$env{MINGW_ROOT}/bin;$env{NINJA_ROOT};$penv{PATH}"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_CXX_COMPILER": "$env{MINGW_ROOT}/bin/g++.exe",
+        "CMAKE_MAKE_PROGRAM": "$env{NINJA_ROOT}/ninja.exe",
+        "Qt6_ROOT": "$env{QT_MINGW_ROOT}"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "windows-msvc-debug",
+      "configurePreset": "windows-msvc",
+      "configuration": "Debug",
+      "jobs": 0
+    },
+    {
+      "name": "windows-msvc-release",
+      "configurePreset": "windows-msvc",
+      "configuration": "Release",
+      "jobs": 0
+    },
+    {
+      "name": "windows-mingw-debug",
+      "configurePreset": "windows-mingw-debug",
+      "jobs": 0
+    },
+    {
+      "name": "windows-mingw-release",
+      "configurePreset": "windows-mingw-release",
+      "jobs": 0
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "windows-msvc-debug",
+      "configurePreset": "windows-msvc",
+      "configuration": "Debug",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "stopOnFailure": true
+      }
+    },
+    {
+      "name": "windows-msvc-release",
+      "configurePreset": "windows-msvc",
+      "configuration": "Release",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "stopOnFailure": true
+      }
+    },
+    {
+      "name": "windows-mingw-debug",
+      "configurePreset": "windows-mingw-debug",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "stopOnFailure": true
+      }
+    },
+    {
+      "name": "windows-mingw-release",
+      "configurePreset": "windows-mingw-release",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "stopOnFailure": true
+      }
+    }
+  ],
+  "packagePresets": [
+    {
+      "name": "windows-msvc-release",
+      "configurePreset": "windows-msvc",
+      "generators": ["ZIP"],
+      "configurations": ["Release"]
+    },
+    {
+      "name": "windows-mingw-release",
+      "configurePreset": "windows-mingw-release",
+      "generators": ["ZIP"]
+    }
+  ],
+  "workflowPresets": [
+    {
+      "name": "windows-msvc-debug",
+      "displayName": "Configure, build, and test with MSVC (Debug)",
+      "steps": [
+        { "type": "configure", "name": "windows-msvc" },
+        { "type": "build", "name": "windows-msvc-debug" },
+        { "type": "test", "name": "windows-msvc-debug" }
+      ]
+    },
+    {
+      "name": "windows-msvc-release",
+      "displayName": "Configure, build, test, and package with MSVC (Release)",
+      "steps": [
+        { "type": "configure", "name": "windows-msvc" },
+        { "type": "build", "name": "windows-msvc-release" },
+        { "type": "test", "name": "windows-msvc-release" },
+        { "type": "package", "name": "windows-msvc-release" }
+      ]
+    },
+    {
+      "name": "windows-mingw-debug",
+      "displayName": "Configure, build, and test with MinGW (Debug)",
+      "steps": [
+        { "type": "configure", "name": "windows-mingw-debug" },
+        { "type": "build", "name": "windows-mingw-debug" },
+        { "type": "test", "name": "windows-mingw-debug" }
+      ]
+    },
+    {
+      "name": "windows-mingw-release",
+      "displayName": "Configure, build, test, and package with MinGW (Release)",
+      "steps": [
+        { "type": "configure", "name": "windows-mingw-release" },
+        { "type": "build", "name": "windows-mingw-release" },
+        { "type": "test", "name": "windows-mingw-release" },
+        { "type": "package", "name": "windows-mingw-release" }
+      ]
+    }
+  ]
+}
